@@ -97,39 +97,3 @@ def plot_gpr(x, x_s, f, mu, covs):
     plt.show()
 
 
-
-### Testing 
-x = np.array([-1, 0, 0.5]).reshape(-1,1)
-x_s = np.arange(-1,1,0.01).reshape(-1,1)
-
-mu, covs = predictive_process(x, x_s, np.sin, cov_exp)
-    
-plt.figure(1)
-plt.title("Sq exponential cov function")
-plot_gpr(x, x_s, np.sin, mu, covs)
-
-x = np.array([-1,-0.5, 0, 0.5,1]).reshape(-1,1)
-
-mu, covs = predictive_process(x, x_s, np.sin, cov_exp)
-
-plt.figure(2)
-plt.title("Sq exponential cov function")
-plot_gpr(x, x_s, np.sin, mu, covs)
-
-
-x = np.array([-1,-0.5, 0, 0.5,1]).reshape(-1,1)
-
-mu, covs = predictive_process(x, x_s, np.sin, cov_matern)
-
-plt.figure(3)
-plt.title("Matern cov function, v=3/2")
-plot_gpr(x, x_s, np.sin, mu, covs)
-
-
-x = np.array([-1,-0.5, 0, 0.5,1]).reshape(-1,1)
-
-mu, covs = predictive_process(x, x_s, np.sin, cov_rq)
-
-plt.figure(4)
-plt.title("Rational quadratic cov function")
-plot_gpr(x, x_s, np.sin, mu, covs)
