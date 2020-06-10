@@ -1,1 +1,1 @@
-# Physiscs-Informed-Emulator
+# Physics-Informed-Emulator
