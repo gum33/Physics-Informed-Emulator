@@ -42,8 +42,6 @@ def cov_rq(x1, x2,alpha=0.5, l=1):
     return (1+diff**2 / (2*alpha*l))**-alpha
 
 
-
-
 def predictive_process(x, x_s, f, k):
     '''
     Returns the predictive mean and predictive covariance for use
@@ -70,30 +68,74 @@ def predictive_process(x, x_s, f, k):
 
 def predictive_process2(x, x_s, f, k):
     '''
-    Work in progress. Algorithm 2.1 (Rasmussen & Williams 2006) page 19
+    Avoids calculating inverse of a matrix
+    Input:
+        x: set of training points 
+        x_s: domain
+        f: function to emulate
+        k: covariance function
     '''
     
     y= f(x)
-    L = np.linalg.cholesky(k(x,x)+ 1e-9 *np.eye(len(x)))
-    alpha = L.T @ (L@y)
+        
+    alpha = np.linalg.solve(k(x,x),y)
+    
     f_s = np.dot(k(x,x_s).T,alpha) # predictive mean
-    v = L @ k(x,x_s)
-    Vf = k(x_s,x_s) - np.dot(v.T,v) #Predictive cov
+    
+    v = np.linalg.solve(k(x,x),k(x,x_s))
+    
+    Vf = k(x_s,x_s) - np.dot(k(x,x_s).T,v) #Predictive cov
     
     return f_s, Vf
 
 
 
-def plot_gpr(x, x_s, f, mu, covs):
+def plot_gpr(x, x_s, f, mu, covs, samples=3, draw_samples=True):
     '''
     Plot gaussian process compared with a true solution
-    '''
-    sol = np.random.multivariate_normal(mu.ravel(), covs) #GP(muf, kn(x,x))
+    Input:
+        
     
-    plt.plot(x, f(x), 'ro')
-    plt.plot(x_s, f(x_s))
-    plt.plot(x_s, sol, linestyle="--")
-    plt.legend(["Training points", "Solution", "Emulation"])
+    '''
+    
+    sol = np.random.multivariate_normal(mu.ravel(), covs,samples) #GP(muf, kn(x,x))
+    
+    
+    plt.plot(x, f(x), 'ro',zorder = 10, label="Training points")
+    plt.plot(x_s, f(x_s), linewidth = 3,  label="f(x)",zorder=5,)
+    
+    #Plot functions from the posterior
+    if draw_samples:
+        for i in sol:
+            plt.plot(x_s, i, linestyle="--",color="green")
+    
+    
+    # Compute the mean of the sample. 
+    y_hat = np.apply_over_axes(func=np.mean, a=sol, axes=0).squeeze()
+    # Compute the standard deviation of the sample. 
+    y_hat_sd = np.apply_over_axes(func=np.std, a=sol, axes=0).squeeze()
+    
+    #plot 95% confidence interval
+    plt.fill_between(x_s.ravel(),
+                     y1=(y_hat - 1.960* y_hat_sd/np.sqrt(samples)),
+                     y2=(y_hat + 1.960* y_hat_sd/np.sqrt(samples)),
+                     color = "orange",
+                     alpha = 0.4,
+                     label = "Confidence interval"
+    )
+    
+    plt.legend()
     plt.show()
+
+
+### Testing 
+x = np.array([-1, 0, 0.5]).reshape(-1,1)
+x_s = np.arange(-1,1,0.01).reshape(-1,1)
+
+mu, covs = predictive_process2(x, x_s, np.sin, cov_exp)
+    
+plt.figure(1)
+plt.title("Sq exponential cov function")
+plot_gpr(x, x_s, np.sin, mu, covs)
 
 
