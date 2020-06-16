@@ -115,13 +115,13 @@ def plot_gpr(x, x_s, f, mu, covs, samples=3, draw_samples=True):
     # Compute the standard deviation of the sample. 
     y_hat_sd = np.apply_over_axes(func=np.std, a=sol, axes=0).squeeze()
     
-    #plot 95% confidence interval
+    #plot credible interval
     plt.fill_between(x_s.ravel(),
-                     y1=(y_hat - 1.960* y_hat_sd/np.sqrt(samples)),
-                     y2=(y_hat + 1.960* y_hat_sd/np.sqrt(samples)),
+                     y1=(y_hat - 2* y_hat_sd),
+                     y2=(y_hat + 2* y_hat_sd),
                      color = "orange",
                      alpha = 0.4,
-                     label = "Confidence interval"
+                     label = "Credible interval"
     )
     
     plt.legend()
