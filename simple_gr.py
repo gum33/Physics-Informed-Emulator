@@ -76,7 +76,7 @@ def predictive_process2(x, x_s, f, k):
         k: covariance function
     '''
     
-    y= f(x)
+    y = f(x)
         
     alpha = np.linalg.solve(k(x,x),y)
     
@@ -95,42 +95,39 @@ def plot_gpr(x, x_s, f, mu, covs, samples=3, draw_samples=True):
     Plot gaussian process compared with a true solution
     Input:
         
-    
     '''
     
     sol = np.random.multivariate_normal(mu.ravel(), covs,samples) #GP(muf, kn(x,x))
     
     
-    plt.plot(x, f(x), 'ro',zorder = 10, label="Training points")
-    plt.plot(x_s, f(x_s), linewidth = 3,  label="f(x)",zorder=5,)
+    plt.plot(x, f(x), 'rx',zorder = 10, label="Training points",markeredgewidth  = 2, markersize=8)
+    plt.plot(x_s, f(x_s), linewidth = 2,  label="f",zorder=5,)
+    plt.plot(x_s, mu.ravel(), linewidth = 2,  label=r"$\bar{f}_*$",zorder=4,color="red")
     
     #Plot functions from the posterior
     if draw_samples:
         for i in sol:
             plt.plot(x_s, i, linestyle="--",color="green")
     
-    
-    # Compute the mean of the sample. 
-    y_hat = np.apply_over_axes(func=np.mean, a=sol, axes=0).squeeze()
-    # Compute the standard deviation of the sample. 
-    y_hat_sd = np.apply_over_axes(func=np.std, a=sol, axes=0).squeeze()
-    
+
     #plot credible interval
     plt.fill_between(x_s.ravel(),
-                     y1=(y_hat - 2* y_hat_sd),
-                     y2=(y_hat + 2* y_hat_sd),
+                     y1=(mu.ravel() - 1.96* np.sqrt(covs.diagonal())),
+                     y2=(mu.ravel() + 1.96* np.sqrt(covs.diagonal())),
                      color = "orange",
                      alpha = 0.4,
-                     label = "Credible interval"
+                     label = "Confidence interval"
     )
     
     plt.legend()
+    plt.xlim(x_s[0],x_s[-1])
+    
     plt.show()
 
 
 ### Testing 
-x = np.array([-1, 0, 0.5]).reshape(-1,1)
-x_s = np.arange(-1,1,0.01).reshape(-1,1)
+x = np.array([-0.75, 0, 0.75]).reshape(-1,1)
+x_s = np.linspace(-1,1,100, endpoint=True).reshape(-1,1)
 
 mu, covs = predictive_process2(x, x_s, np.sin, cov_exp)
     
